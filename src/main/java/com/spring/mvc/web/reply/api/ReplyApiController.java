@@ -48,7 +48,7 @@ public class ReplyApiController {
     //댓글 수정 요청 처리
     @PutMapping("/{rno}")
     public ResponseEntity<String> modify(
-            @PathVariable int replyNo,
+            @PathVariable("rno") int replyNo,
             @RequestBody Reply reply
     ){
       reply.setReplyNo(replyNo);
