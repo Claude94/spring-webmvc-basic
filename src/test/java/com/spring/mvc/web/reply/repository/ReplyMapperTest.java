@@ -1,3 +1,4 @@
+/*
 package com.spring.mvc.web.reply.repository;
 
 import com.spring.mvc.web.reply.domain.Reply;
@@ -66,4 +67,4 @@ class ReplyMapperTest {
 
         assertTrue(replyMapper.getList(332).size() == 18);
     }
-}
+}*/

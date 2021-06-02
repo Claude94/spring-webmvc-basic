@@ -57,6 +57,7 @@
 
 </head>
 <body>
+	<%@ include file="../include/header.jsp" %>
 
 <c:if test="${articles.size() <= 0}">
 	<p>게시물이 존재하지 않습니다.</p>
