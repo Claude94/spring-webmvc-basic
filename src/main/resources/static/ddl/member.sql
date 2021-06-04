@@ -1,4 +1,4 @@
-- 회원 관리 테이블
+-- 회원 관리 테이블
 CREATE TABLE member (
     account VARCHAR2(50),
     password VARCHAR2(150) NOT NULL,
@@ -15,3 +15,7 @@ VALUES ('admin', '1234', '관리자', 'admin@gmail.com', 'ADMIN');
 COMMIT;
 
 SELECT * FROM member;
+
+-- 자동로그인 관련 컬럼 추가
+ALTER TABLE member ADD session_id VARCHAR2(200) DEFAULT 'none';
+ALTER TABLE member ADD limit_time DATE;
