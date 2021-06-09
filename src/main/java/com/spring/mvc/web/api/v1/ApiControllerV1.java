@@ -36,12 +36,11 @@ public class ApiControllerV1 {
         return Arrays.asList("정보보안", "컴퓨터공학", "경영학", "수학과");
     }
 
-    @GetMapping("/board")
-    @ResponseBody
-    public Board board() {
-        return new Board(105, "김레스트"
-                , "레스트api 학습중", "메롱메롱~", 0);
-    }
+//    @GetMapping("/board")
+//    @ResponseBody
+//    public Board board() {
+//        return new Board(105, "김레스트", "레스트api 학습중", "메롱메롱~", 0);
+//    }
 
     @GetMapping("/food")
     @ResponseBody

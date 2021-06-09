@@ -2,7 +2,6 @@ package com.spring.mvc.web.board.controller;
 
 import com.spring.mvc.web.board.domain.Board;
 import com.spring.mvc.web.board.domain.ModifyBoard;
-import com.spring.mvc.web.board.repository.BoardRepository;
 import com.spring.mvc.web.board.service.BoardService;
 import com.spring.mvc.web.common.paging.Criteria;
 import com.spring.mvc.web.common.paging.PageMaker;
@@ -13,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 @Controller
 @Log4j2
@@ -40,6 +40,7 @@ public class BoardController {
     //글 작성 처리 요청
     @PostMapping("/board/write")
     public String write(Board article) {
+        List<String> files = article.getFilePathList();
         boardService.insertArticle(article);
         return "redirect:/board/list";
     }

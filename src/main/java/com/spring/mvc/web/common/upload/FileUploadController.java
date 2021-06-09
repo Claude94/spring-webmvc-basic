@@ -7,10 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -74,6 +71,7 @@ public class FileUploadController {
         }
         return new ResponseEntity<>(pathList, HttpStatus.OK);
     }
+
     //파일 로딩 비동기 요청 처리
     //요청URL: /loadFile?fileName=/2021/06/08/s_adasdaasda_cat.jpg
     @GetMapping("/loadFile")
@@ -89,8 +87,8 @@ public class FileUploadController {
         if (!file.exists()) return new ResponseEntity<>((HttpStatus.NOT_FOUND));
 
         //2.서버에 해당 파일이 저장되어 있다면 InputStream을 통해 파일을 로딩
-        try {
-            InputStream in = new FileInputStream(file);
+        try (InputStream in = new FileInputStream(file)){
+
             //3. 응답 헤더에 파일의 컨텐프 미디어 타입을 설정
             HttpHeaders headers = new HttpHeaders();
 
@@ -102,12 +100,12 @@ public class FileUploadController {
             if (mediaType != null) {
 //                이미지인 경우
                 headers.setContentType(mediaType);
-            }else {
+            } else {
                 //이미지가 아닌 경우 :'다운로드 기능을 활성화하는 미디어타입 설정
                 headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
                 //파일명 원레대로 복구
-                fileName = fileName.substring(fileName.lastIndexOf("_" ) + 1);
+                fileName = fileName.substring(fileName.lastIndexOf("_") + 1);
 
                 //파일명이 한글인 경우를 대비해 인코딩을 재설정
                 String encording = new String(fileName.getBytes("UTF-8"), "ISO-8859-1");
@@ -123,5 +121,42 @@ public class FileUploadController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 
         }
+    }
+
+    //서버에 저장된 파일을 삭제하는 비동기 요청처리
+    //URI: /deleteFile?fileName=/2021/06/09/sadssad_abc.jpg
+    @DeleteMapping("/deleteFile")
+    @ResponseBody
+    public ResponseEntity<String> deleteFile(String fileName) throws IOException {
+        log.info("/deleteFile DELETE -" + fileName);
+        try {
+            //파일 삭제
+            // 이 경우 이미지파일은 썸네일만 삭제되고 원본이 남게됨
+            File file = new File(UPLOAD_PATH + fileName);
+            file.delete();
+
+            //따라서 이미지인 경우 원본까지 지우도록 해야한다
+            if (isImage(fileName)) {
+                //원본을 지우는 코드
+                //fileName => 썸네일 이미지 경로: /2021/06/09/s_asdsadasd_asd.jpg
+                //originalName => 원본이미지 경로: /2021/06/09/asdsadasd_asd.jpg
+                int lastSlashIdx = fileName.lastIndexOf("/");
+                String originalName = fileName.substring(0, lastSlashIdx + 1)
+                        + fileName.substring(lastSlashIdx + 3);
+
+                File origin = new File(UPLOAD_PATH + originalName);
+                origin.delete();
+            }
+            return new ResponseEntity<>("fileDeleteSuccess", HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+
+        }
+    }
+
+    //이미지 판변
+    private boolean isImage(String fileName) {
+        return FileUtils.getMediaType(FileUtils.getFileExtension(fileName)) != null;
     }
 }
