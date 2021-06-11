@@ -7,6 +7,8 @@ import com.spring.mvc.web.common.paging.Criteria;
 import com.spring.mvc.web.common.paging.PageMaker;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -70,6 +72,14 @@ public class BoardController {
         model.addAttribute("article", content);
         //model.addAttribute("cri", criteria);
         return "board/content";
+    }
+
+    //글 상세보기 요청에 첨부파일 경로리스트를 조회
+    @GetMapping("/board/file/{boardNo}")
+    @ResponseBody
+    public ResponseEntity<List<String>> getFilePaths(@PathVariable int boardNo) {
+        log.info("/board/file/" + boardNo + "비동기 GET 요청");
+        return new ResponseEntity<>(boardService.getFilePath(boardNo), HttpStatus.OK);
     }
 
     //글 수정하기 화면요청

@@ -39,7 +39,19 @@ public class BoardService {
 //        return boardRepository.getArticles(criteria);
 
         //검색 쿼리
-        return boardRepository.getSearchArticles(criteria);
+        List<Board> articles = boardRepository.getSearchArticles(criteria);
+        //3분 이내 신규글 new 마크 붙이기
+        for (Board article : articles) {
+            //각 게시물 등록시간 읽어오기
+            long regTime = article.getRegDate().getTime();
+            //현재시간 읽어 오기
+            long now = System.currentTimeMillis();
+            //1일의 밀리초 : 60 * 60 * 24 * 1000
+            if (now - regTime < 60) {
+                article.setNewArticle(true);
+            }
+        }
+        return articles;
     }
 
     //총 게시물 수 확인
@@ -66,6 +78,7 @@ public class BoardService {
     }
 
     //게시글 내용보기
+    @Transactional
     public Board getContent(int boardNo, boolean viewFlag) {
         Board content = boardRepository.getContent(boardNo);
         if (viewFlag) {
@@ -73,6 +86,10 @@ public class BoardService {
             boardRepository.upViewCount(boardNo);
         }
         return content;
+    }
+    //첨부파일 경로 목록
+    public List<String> getFilePath(int boardNo) {
+        return boardRepository.getFilePaths(boardNo);
     }
 
     //게시글 수정
