@@ -1,12 +1,19 @@
 package com.spring.mvc.web.member;
 
+import com.spring.mvc.web.member.domain.Member;
 import com.spring.mvc.web.member.domain.OAuthValue;
 import com.spring.mvc.web.member.service.OAuthService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.Map;
 
 @AllArgsConstructor
 @Log4j2
@@ -26,12 +33,38 @@ public class KakaoController {
     //카카오 서버가 보내준 리다이렉션에 대해 처리할 요청 메서드
     //인가 코드를 받아 사용자 정보에 접근할 수 있는 토큰을 발급받는 과정
     @GetMapping(OAuthValue.KAKAO_REDIRECT_URI)
-    public String kakaoLogin(String code) throws Exception{
+    public String kakaoLogin(String code, HttpSession session) throws Exception{
         log.info("/auth/kakao 요청 : 인가코드" + code );
         //인가 코드로 엑세스토큰을 발급 받아야 함
         //우리 서버에서 카카오 서버로 요청을 보내야 함
-        kakaoService.getAccessToken(code);
+        String accessToken = kakaoService.getAccessToken(code);
 
+        //액세스토큰을 통해 사용자 정보 요청
+        kakaoService.getKakaoUserInfo(accessToken);
+
+        Map<String, Object> userInfo = kakaoService.getKakaoUserInfo(accessToken);
+        if (userInfo != null) {
+            Member member =new Member();
+            member.setAccount((String) userInfo.get("email"));
+            member.setEmail((String) userInfo.get("email"));;
+            member.setName((String) userInfo.get("nickName"));
+            //세선저장
+            session.setAttribute("loginUser", member);
+            session.setAttribute("profile_path", userInfo.get("profileImg"));
+            session.setAttribute("loginMethod","kakao");
+            session.setAttribute("accessToken", accessToken);
+        }
+
+        return "redirect:/kakao-test";
+    }
+    //카카오 로그아웃
+    @GetMapping("/kakao/logout")
+    public String kakaoLogout(HttpSession session) throws Exception {
+        //카카오 서버 로그아웃
+        kakaoService.logout((String)session.getAttribute("accessToken"));
+        //우리 서비스 로그아웃
+        session.removeAttribute("loginUser");
+        session.invalidate();
 
         return "redirect:/kakao-test";
     }
